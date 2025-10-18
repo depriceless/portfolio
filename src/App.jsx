@@ -116,7 +116,7 @@ export default function Portfolio() {
           <div className="flex justify-between items-center">
             <div className="text-2xl font-bold cursor-pointer group">
               <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 inline-block">
-                Mutiu Ridwan
+      
               </span>
             </div>
             
