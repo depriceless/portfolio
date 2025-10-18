@@ -156,71 +156,75 @@ export default function Portfolio() {
           )}
         </div>
       </nav>
+// Add this new section between your hero section and the about section
+// Insert this code inside your Portfolio component, after the first section closes
 
-      <section id="home" className="min-h-screen flex items-center justify-center px-6 pt-20 relative overflow-hidden">
-        <div className="max-w-5xl mx-auto relative z-10 w-full">
-          <div className="flex flex-col items-center gap-12">
-            <div className="text-center max-w-3xl">
-              <div className="mb-8 inline-block">
-                <div className="px-3 py-1 bg-slate-800/50 border border-slate-700 rounded text-slate-400 text-xs font-medium tracking-wider uppercase hover:border-slate-600 transition-all duration-300">
-                  Available for freelance & full-time opportunities
-                </div>
-              </div>
-              
-              <h1 className="text-6xl md:text-8xl font-bold mb-8 leading-tight tracking-tight">
-                <span className="block">Mutiu Ridwan</span>
-                <span className="block text-slate-400">Adeyinka</span>
-              </h1>
-              
-              <p className="text-xl md:text-2xl text-slate-300 mb-4 font-medium">
-                Full Stack Developer
-              </p>
-              
-              <p className="text-lg md:text-xl text-slate-400 mb-8 max-w-3xl mx-auto leading-relaxed">
-                I build scalable web and mobile applications using React.js, React Native, and Next.js. Focused on creating high-performance solutions that solve real-world problems.
-              </p>
-              
-              <div className="flex gap-4 justify-center flex-wrap mb-12">
-                <button
-                  onClick={() => scrollToSection('projects')}
-                  className="group px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 flex items-center gap-2 font-semibold hover:scale-105 active:scale-95"
-                >
-                  View My Work 
-                  <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
-                </button>
-                <button
-                  onClick={() => scrollToSection('contact')}
-                  className="px-8 py-4 border-2 border-slate-600 rounded-lg hover:bg-slate-800 hover:border-blue-500 transition-all duration-300 font-semibold hover:scale-105 active:scale-95"
-                >
-                  Get In Touch
-                </button>
-              </div>
-              
-              <div className="flex gap-6 justify-center">
-                {[
-                  {icon: Github, url: 'https://github.com/depriceless'},
-                  {icon: Linkedin, url: '#'},
-                  {icon: Mail, url: 'mailto:mutiuridwan0@gmail.com'}
-                ].map((social, i) => (
-                  <a 
-                    key={i}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-4 bg-slate-800/50 rounded-lg hover:bg-blue-500/20 hover:scale-125 transition-all duration-300 border border-slate-700 hover:border-blue-500 group"
-                  >
-                    <social.icon size={24} className="group-hover:rotate-12 transition-transform duration-300" />
-                  </a>
-                ))}
-              </div>
+<section className="min-h-screen flex items-center justify-center px-6 py-20 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+  <div className="absolute inset-0 pointer-events-none">
+    <div className="absolute w-96 h-96 bg-blue-500/10 rounded-full blur-3xl top-1/4 left-0 animate-pulse"></div>
+    <div className="absolute w-96 h-96 bg-purple-500/10 rounded-full blur-3xl bottom-1/4 right-0 animate-pulse" style={{animationDelay: '1s'}}></div>
+  </div>
 
-              <div className="mt-12 animate-bounce" style={{animationDuration: '2s'}}>
-                <ChevronDown size={32} className="mx-auto text-blue-400" />
-              </div>
-            </div>
-          </div>
+  <div className="max-w-6xl mx-auto w-full relative z-10">
+    <div className="grid md:grid-cols-2 gap-8 items-center h-80">
+      {/* Left side - slides from left */}
+      <div className="flex justify-end animate-slide-in-left">
+        <div className="bg-gradient-to-r from-cyan-500 via-blue-500 to-blue-600 text-white px-12 py-8 rounded-2xl font-bold text-2xl md:text-3xl shadow-2xl hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-105 whitespace-nowrap">
+          Mutiu Ridwan Adeyinka
         </div>
-      </section>
+      </div>
+
+      {/* Right side - slides from right */}
+      <div className="flex justify-start animate-slide-in-right">
+        <div className="bg-gradient-to-l from-pink-500 via-purple-500 to-purple-600 text-white px-12 py-8 rounded-2xl font-bold text-2xl md:text-3xl shadow-2xl hover:shadow-pink-500/50 transition-all duration-300 hover:scale-105 whitespace-nowrap">
+          Full Developer Reach Problem
+        </div>
+      </div>
+    </div>
+
+    {/* Center meeting point indicator */}
+    <div className="flex justify-center mt-8">
+      <div className="relative flex items-center">
+        <div className="absolute w-32 h-32 bg-gradient-to-b from-yellow-400 via-orange-400 to-transparent rounded-full blur-2xl opacity-50"></div>
+        <div className="relative text-center">
+          <p className="text-slate-300 text-lg font-semibold">Where Vision Meets Code</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>{`
+    @keyframes slideInLeft {
+      0% {
+        transform: translateX(-150%);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInRight {
+      0% {
+        transform: translateX(150%);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .animate-slide-in-left {
+      animation: slideInLeft 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-slide-in-right {
+      animation: slideInRight 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+  `}</style>
+</section>
 
       <section id="about" className={`py-20 px-6 bg-slate-900/50 transition-all duration-1000 ${visibleSections.about ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
         <div className="max-w-6xl mx-auto">
@@ -233,8 +237,8 @@ export default function Portfolio() {
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 rounded-2xl m-0.5">
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10"></div>
-                  <img 
-                    src="https://i.imgur.com/i3Xn73S.jpeg" 
+                   <img 
+                    src="https://i.imgur.com/n9I3Y9h.jpeg" 
                     alt="Mutiu Ridwan Adeyinka" 
                     className="w-full h-full object-cover object-top rounded-2xl relative z-10"
                   />
