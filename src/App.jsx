@@ -76,29 +76,25 @@ export default function Portfolio() {
       icon: <Globe className="w-8 h-8" />,
       title: 'Web Development',
       description: 'Custom websites and applications with modern frameworks, SEO optimization, and optimal performance.',
-      highlights: ['Responsive Design', 'SEO Optimization', 'Fast Loading'],
-      price: '$2000+'
+      highlights: ['Responsive Design', 'SEO Optimization', 'Fast Loading']
     },
     {
       icon: <Smartphone className="w-8 h-8" />,
       title: 'Mobile App Development',
       description: 'Cross-platform iOS/Android applications using React Native with native performance and seamless UX.',
-      highlights: ['Cross-Platform', 'Native Feel', 'Offline Support'],
-      price: '$3000+'
+      highlights: ['Cross-Platform', 'Native Feel', 'Offline Support']
     },
     {
       icon: <Database className="w-8 h-8" />,
       title: 'Backend Solutions',
       description: 'Scalable server architecture with secure APIs, database design, and cloud infrastructure setup.',
-      highlights: ['API Development', 'Database Design', 'Cloud Integration'],
-      price: '$2500+'
+      highlights: ['API Development', 'Database Design', 'Cloud Integration']
     },
     {
       icon: <Layers className="w-8 h-8" />,
       title: 'Full Stack Solutions',
       description: 'End-to-end development services handling complete project lifecycle from design to deployment and maintenance.',
-      highlights: ['Complete Solutions', 'Maintenance Support', 'Scalability'],
-      price: '$4000+'
+      highlights: ['Complete Solutions', 'Maintenance Support', 'Scalability']
     }
   ];
 
@@ -355,7 +351,7 @@ export default function Portfolio() {
                     </div>
                   ))}
                 </div>
-                <div className="text-blue-400 font-semibold text-sm">Starting at {service.price}</div>
+                <div className="text-emerald-400 font-semibold text-sm">Contact for pricing</div>
               </div>
             ))}
           </div>
