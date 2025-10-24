@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Github, Linkedin, Mail, Phone, MapPin, ExternalLink, Code2, Menu, X, ArrowRight, Smartphone, Globe, Database, Layers, CheckCircle, ChevronDown, ArrowUpRight, Award, Briefcase, Star, TrendingUp } from 'lucide-react';
+import { Github, Linkedin, Mail, MessageCircle, MapPin, ExternalLink, Code2, Menu, X, ArrowRight, Smartphone, Globe, Database, Layers, CheckCircle, ChevronDown, ArrowUpRight, Award, Briefcase, Star, TrendingUp } from 'lucide-react';
 
 export default function Portfolio() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,7 +12,7 @@ export default function Portfolio() {
     const handleScroll = () => {
       setScrollY(window.scrollY);
       
-      const sections = ['about', 'services', 'projects', 'skills', 'experience', 'testimonials', 'contact'];
+      const sections = ['about', 'services', 'projects', 'skills', 'experience', 'contact'];
       const newVisibleSections = {};
       
       sections.forEach(id => {
@@ -135,6 +135,13 @@ export default function Portfolio() {
       rating: 5
     }
   ];
+
+  const availability = {
+    status: 'Available',
+    responseTime: '24 hours',
+    timezone: 'WAT (UTC+1)',
+    workingHours: 'Mon - Sat, 9AM - 6PM'
+  };
 
   const skills = {
     'Frontend': ['React.js', 'Next.js', 'Tailwind CSS', 'JavaScript ES6+', 'HTML5/CSS3', 'Responsive Design'],
@@ -288,13 +295,6 @@ export default function Portfolio() {
             </div>
             
             <div className={`space-y-6 transition-all duration-1000 ${visibleSections.about ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}>
-              <div className="flex items-start gap-4 p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/60 transition-all duration-300 border border-slate-700 hover:border-blue-500/50 cursor-pointer hover:translate-x-2 group">
-                <MapPin className="text-blue-400 mt-1 flex-shrink-0 group-hover:scale-125 transition-transform duration-300" size={20} />
-                <div>
-                  <p className="text-slate-300 font-semibold">Ibadan, Oyo State</p>
-                  <p className="text-slate-400">Nigeria</p>
-                </div>
-              </div>
               
               <p className="text-lg text-slate-300 leading-relaxed hover:text-slate-200 transition-colors duration-300">
                 Results-driven Full Stack Developer with proven expertise building scalable, high-performance applications. Specialized in React.js, React Native, and Next.js with demonstrated success in fintech, e-commerce, and SaaS.
@@ -496,34 +496,6 @@ export default function Portfolio() {
         </div>
       </section>
 
-      <section id="testimonials" className={`py-20 px-6 bg-slate-900/50 transition-all duration-1000 ${visibleSections.testimonials ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">What Clients Say</h2>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="p-8 bg-slate-900 rounded-xl border border-slate-800 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 group">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} size={18} className="fill-yellow-400 text-yellow-400 group-hover:scale-125 transition-transform" />
-                  ))}
-                </div>
-                <p className="text-slate-300 mb-6 text-lg leading-relaxed italic">"{testimonial.text}"</p>
-                <div className="flex items-center gap-4 border-t border-slate-700 pt-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center font-bold">
-                    {testimonial.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">{testimonial.name}</p>
-                    <p className="text-sm text-slate-400">{testimonial.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section id="skills" className={`py-20 px-6 transition-all duration-1000 ${visibleSections.skills ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -561,7 +533,7 @@ export default function Portfolio() {
             <p className="text-slate-400 text-lg">I'm open to freelance projects, full-time opportunities, and consulting</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
             <a 
               href="mailto:mutiuridwan0@gmail.com"
               className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-blue-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 group cursor-pointer"
@@ -572,21 +544,27 @@ export default function Portfolio() {
             </a>
             
             <a 
-              href="tel:08141900468"
-              className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-blue-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 group cursor-pointer"
+              href="https://wa.me/2348125813362"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-green-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20 group cursor-pointer"
             >
-              <Phone className="mx-auto mb-4 text-blue-400 group-hover:scale-125 group-hover:text-blue-300 transition-all duration-300 group-hover:-translate-y-2" size={32} />
-              <h3 className="font-bold mb-2 text-center group-hover:text-blue-400 transition-colors">Phone</h3>
-              <p className="text-slate-400 text-sm text-center group-hover:text-slate-300 transition-colors">+234 814 190 0468</p>
+              <MessageCircle className="mx-auto mb-4 text-green-400 group-hover:scale-125 group-hover:text-green-300 transition-all duration-300 group-hover:-translate-y-2" size={32} />
+              <h3 className="font-bold mb-2 text-center group-hover:text-green-400 transition-colors">WhatsApp</h3>
+              <p className="text-slate-400 text-sm text-center group-hover:text-slate-300 transition-colors">+234 812 581 3362</p>
             </a>
-            
-            <div className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-blue-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 group cursor-pointer">
-              <MapPin className="mx-auto mb-4 text-blue-400 group-hover:scale-125 group-hover:text-blue-300 transition-all duration-300 group-hover:-translate-y-2" size={32} />
-              <h3 className="font-bold mb-2 text-center group-hover:text-blue-400 transition-colors">Location</h3>
-              <p className="text-slate-400 text-sm text-center group-hover:text-slate-300 transition-colors">Ibadan, Nigeria</p>
-            </div>
-          </div>
 
+            <a 
+              href="https://github.com/depriceless"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-purple-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 group cursor-pointer"
+            >
+              <Github className="mx-auto mb-4 text-purple-400 group-hover:scale-125 group-hover:text-purple-300 transition-all duration-300 group-hover:-translate-y-2" size={32} />
+              <h3 className="font-bold mb-2 text-center group-hover:text-purple-400 transition-colors">GitHub</h3>
+              <p className="text-slate-400 text-sm text-center group-hover:text-slate-300 transition-colors">@depriceless</p>
+            </a>
+          </div>
           <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl p-8 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10">
             <h3 className="text-2xl font-bold mb-6 text-center hover:text-blue-400 transition-colors">Ready to start something amazing?</h3>
             <p className="text-slate-300 text-center mb-8 hover:text-slate-200 transition-colors leading-relaxed">
