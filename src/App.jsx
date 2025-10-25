@@ -544,14 +544,13 @@ export default function Portfolio() {
             </a>
             
             <a 
-              href="https://wa.me/2348125813362"
+              href="https://wa.me/2348125813562"
               target="_blank"
               rel="noopener noreferrer"
               className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-green-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20 group cursor-pointer"
             >
               <MessageCircle className="mx-auto mb-4 text-green-400 group-hover:scale-125 group-hover:text-green-300 transition-all duration-300 group-hover:-translate-y-2" size={32} />
               <h3 className="font-bold mb-2 text-center group-hover:text-green-400 transition-colors">WhatsApp</h3>
-              <p className="text-slate-400 text-sm text-center group-hover:text-slate-300 transition-colors">+234 812 581 3562</p>
             </a>
 
             <a 
