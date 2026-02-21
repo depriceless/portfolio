@@ -1,463 +1,815 @@
-import React, { useState, useEffect } from 'react';
-import { Github, Linkedin, Mail, MessageCircle, MapPin, ExternalLink, Code2, Menu, X, ArrowRight, Smartphone, Globe, Database, Layers, CheckCircle, ChevronDown, ArrowUpRight, Award, Briefcase, Star, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Github, Linkedin, Mail, MessageCircle, ExternalLink, Menu, X, ArrowRight, Smartphone, Globe, Database, Layers, CheckCircle, ArrowUpRight, Briefcase, TrendingUp } from 'lucide-react';
+
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap";
+
+const styles = `
+  @import url('${FONT_LINK}');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --ink: #020817;
+    --ink-2: #0f172a;
+    --surface: #0f172a;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.15);
+    --gold: #34d399;
+    --gold-light: #6ee7b7;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --accent: #34d399;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  .serif { font-family: 'Cormorant Garamond', serif; }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: none;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.35;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+  /* Nav */
+  .nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    transition: all 0.5s ease;
+    padding: 1.5rem 0;
+  }
+  .nav.scrolled {
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    padding: 0 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem; font-weight: 600;
+    color: var(--gold); letter-spacing: 0.05em;
+    cursor: pointer;
+  }
+  .nav-links { display: flex; gap: 2.5rem; align-items: center; }
+  .nav-link {
+    font-size: 0.78rem; font-weight: 400; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    cursor: pointer; transition: color 0.3s;
+    background: none; border: none; font-family: 'DM Sans', sans-serif;
+  }
+  .nav-link:hover { color: var(--text); }
+  .nav-cta {
+    font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink);
+    background: var(--gold); border: none;
+    padding: 0.6rem 1.4rem; cursor: pointer;
+    transition: all 0.3s; font-family: 'DM Sans', sans-serif;
+  }
+  .nav-cta:hover { background: var(--gold-light); }
+  .menu-btn {
+    display: none; background: none; border: none;
+    color: var(--text); cursor: pointer; padding: 0.25rem;
+  }
+
+  /* Mobile menu */
+  .mobile-menu {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--ink);
+    display: flex; flex-direction: column;
+    padding: 2rem;
+    animation: fadeIn 0.2s ease;
+  }
+  .mobile-nav-links { display: flex; flex-direction: column; gap: 0; margin-top: 3rem; }
+  .mobile-nav-link {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem; font-weight: 300;
+    color: var(--muted); text-align: left;
+    background: none; border: none; border-bottom: 1px solid var(--border);
+    padding: 1rem 0; cursor: pointer; transition: color 0.3s;
+    letter-spacing: -0.01em;
+  }
+  .mobile-nav-link:hover { color: var(--gold); }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 8rem 2rem 4rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image: 
+      linear-gradient(rgba(52,211,153,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(52,211,153,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    max-width: 1200px; margin: 0 auto;
+    position: relative; z-index: 1; width: 100%;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .eyebrow-line { width: 40px; height: 1px; background: var(--gold); }
+  .eyebrow-text {
+    font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); font-weight: 400;
+  }
+  .hero-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4rem, 10vw, 8rem);
+    font-weight: 300; line-height: 0.95;
+    letter-spacing: -0.02em; color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .hero-name-em {
+    font-style: italic; color: var(--gold);
+    display: block;
+  }
+  .hero-role {
+    font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); margin: 2rem 0 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .hero-role::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--muted); max-width: 520px;
+    line-height: 1.8; margin-bottom: 3rem;
+  }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 4rem; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-size: 0.78rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+    background: var(--gold); color: var(--ink); padding: 1rem 2rem;
+    border: none; cursor: pointer; transition: all 0.3s; font-family: 'DM Sans', sans-serif;
+    text-decoration: none;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-size: 0.78rem; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase;
+    background: transparent; color: var(--text); padding: 1rem 2rem;
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.3s;
+    font-family: 'DM Sans', sans-serif; text-decoration: none;
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+  .hero-socials { display: flex; gap: 1.5rem; }
+  .social-link {
+    color: var(--muted); transition: color 0.3s;
+    display: flex; align-items: center;
+  }
+  .social-link:hover { color: var(--gold); }
+  .hero-stats {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 2rem;
+  }
+  .stat-item { text-align: right; }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem; font-weight: 300; color: var(--gold);
+    line-height: 1; letter-spacing: -0.02em;
+  }
+  .stat-label { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+
+  /* Section base */
+  .section { padding: 7rem 2rem; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-label {
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-label-line { width: 30px; height: 1px; background: var(--gold); }
+  .section-label-text {
+    font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold);
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 300; line-height: 1.1;
+    letter-spacing: -0.02em; color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+  .section-title em { font-style: italic; color: var(--gold); }
+
+  /* About */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+  .about-img-wrap {
+    position: relative;
+  }
+  .about-img-frame {
+    position: relative;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+  }
+  .about-img-frame::before {
+    content: '';
+    position: absolute; inset: 0;
+    border: 1px solid var(--gold);
+    z-index: 2; pointer-events: none;
+    transform: translate(12px, 12px);
+    transition: transform 0.4s ease;
+  }
+  .about-img-wrap:hover .about-img-frame::before { transform: translate(8px, 8px); }
+  .about-img-frame img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top;
+    filter: grayscale(20%); transition: filter 0.4s;
+  }
+  .about-img-wrap:hover .about-img-frame img { filter: grayscale(0%); }
+  .about-text { color: var(--muted); font-size: 1rem; line-height: 1.9; margin-bottom: 2rem; }
+  .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .about-stat {
+    background: var(--ink); padding: 1.5rem;
+    transition: background 0.3s;
+  }
+  .about-stat:hover { background: var(--surface); }
+  .about-stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem; font-weight: 300; color: var(--gold); line-height: 1;
+  }
+  .about-stat-label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 0.25rem; }
+
+  /* Services */
+  .services-bg { background: var(--surface); }
+  .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .service-card {
+    background: var(--ink); padding: 2.5rem 2rem;
+    transition: background 0.3s; position: relative; overflow: hidden;
+  }
+  .service-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--gold); transform: scaleX(0); transition: transform 0.4s;
+  }
+  .service-card:hover { background: var(--surface); }
+  .service-card:hover::after { transform: scaleX(1); }
+  .service-icon { color: var(--gold); margin-bottom: 1.5rem; }
+  .service-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem; font-weight: 300; color: var(--border);
+    position: absolute; top: 1rem; right: 1.5rem; line-height: 1;
+    transition: color 0.3s;
+  }
+  .service-card:hover .service-num { color: rgba(52,211,153,0.06); }
+  .service-title {
+    font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+  .service-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+  .service-features { list-style: none; }
+  .service-feature {
+    font-size: 0.75rem; color: var(--muted); padding: 0.3rem 0;
+    border-top: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;
+  }
+  .feature-dot { width: 4px; height: 4px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+
+  /* Projects */
+  .projects-filter { display: flex; gap: 0; margin-bottom: 3rem; border: 1px solid var(--border); width: fit-content; }
+  .filter-btn {
+    font-size: 0.72rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 0.7rem 1.4rem; background: none; border: none; color: var(--muted);
+    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    border-right: 1px solid var(--border);
+  }
+  .filter-btn:last-child { border-right: none; }
+  .filter-btn.active { background: var(--gold); color: var(--ink); }
+  .filter-btn:not(.active):hover { color: var(--text); background: var(--surface); }
+  .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); }
+  .project-card {
+    background: var(--ink); overflow: hidden; position: relative;
+    transition: background 0.3s; cursor: pointer;
+  }
+  .project-card:hover { background: var(--surface); }
+  .project-img {
+    aspect-ratio: 16/10; overflow: hidden; position: relative;
+  }
+  .project-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.6s ease; filter: grayscale(15%);
+  }
+  .project-card:hover .project-img img { transform: scale(1.05); filter: grayscale(0%); }
+  .project-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,10,15,0.8) 0%, transparent 60%);
+  }
+  .project-body { padding: 1.75rem; }
+  .project-type {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.5rem;
+  }
+  .project-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem; font-weight: 400; color: var(--text);
+    margin-bottom: 0.75rem; line-height: 1.2;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;
+  }
+  .project-arrow { color: var(--muted); flex-shrink: 0; margin-top: 0.25rem; transition: all 0.3s; }
+  .project-card:hover .project-arrow { color: var(--gold); transform: translate(2px, -2px); }
+  .project-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.25rem; }
+  .project-tech { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+  .tech-tag {
+    font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.25rem 0.6rem; border: 1px solid var(--border); color: var(--muted);
+  }
+  .project-links { display: flex; gap: 1.5rem; }
+  .project-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; transition: color 0.2s;
+  }
+  .project-link:hover { color: var(--gold); }
+
+  /* Experience */
+  .exp-bg { background: var(--surface); }
+  .exp-timeline { position: relative; padding-left: 2rem; }
+  .exp-timeline::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+    background: var(--border);
+  }
+  .exp-item {
+    position: relative; padding: 0 0 3rem 2.5rem; 
+  }
+  .exp-item::before {
+    content: ''; position: absolute; left: -5px; top: 8px;
+    width: 10px; height: 10px; background: var(--gold); border-radius: 50%;
+    box-shadow: 0 0 0 4px var(--surface);
+    transition: all 0.3s;
+  }
+  .exp-item:hover::before { box-shadow: 0 0 0 6px rgba(52,211,153,0.12); }
+  .exp-duration {
+    font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.5rem;
+  }
+  .exp-position {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem; font-weight: 300; color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+  .exp-company { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.25rem; }
+  .exp-highlights { list-style: none; }
+  .exp-highlight {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+    font-size: 0.87rem; color: var(--muted); padding: 0.5rem 0;
+    border-top: 1px solid var(--border); line-height: 1.6;
+  }
+  .exp-highlight-icon { color: var(--gold); flex-shrink: 0; margin-top: 2px; }
+
+  /* Skills */
+  .skills-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .skill-group {
+    background: var(--ink); padding: 2rem;
+    transition: background 0.3s;
+  }
+  .skill-group:hover { background: var(--surface); }
+  .skill-group-title {
+    font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .skill-list { list-style: none; }
+  .skill-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.85rem; color: var(--muted); padding: 0.4rem 0;
+    border-bottom: 1px solid var(--border); transition: color 0.2s;
+  }
+  .skill-item:last-child { border-bottom: none; }
+  .skill-item:hover { color: var(--text); }
+  .skill-dot { width: 4px; height: 4px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+
+  /* Contact */
+  .contact-bg { background: var(--surface); }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: start; }
+  .contact-cards { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .contact-card {
+    background: var(--ink); padding: 1.75rem 2rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    text-decoration: none; transition: background 0.3s; position: relative; overflow: hidden;
+  }
+  .contact-card::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--gold); transform: scaleY(0); transition: transform 0.3s;
+  }
+  .contact-card:hover { background: var(--surface); }
+  .contact-card:hover::after { transform: scaleY(1); }
+  .contact-icon { color: var(--gold); flex-shrink: 0; }
+  .contact-info-label {
+    font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.15rem;
+  }
+  .contact-info-value { font-size: 0.9rem; color: var(--text); }
+  .contact-arrow { margin-left: auto; color: var(--muted); transition: all 0.3s; }
+  .contact-card:hover .contact-arrow { color: var(--gold); transform: translate(3px, -3px); }
+  .contact-cta-box {
+    border: 1px solid var(--border); padding: 3rem; position: relative; overflow: hidden;
+  }
+  .contact-cta-box::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .contact-cta-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem; font-weight: 300; font-style: italic;
+    color: var(--text); line-height: 1.4; margin-bottom: 2rem;
+  }
+  .contact-response {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-size: 0.78rem; color: var(--muted); margin-top: 2rem;
+    padding-top: 2rem; border-top: 1px solid var(--border);
+  }
+  .response-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; flex-shrink: 0; animation: pulse 2s infinite; }
+
+  /* Footer */
+  .footer { padding: 3rem 2rem; border-top: 1px solid var(--border); }
+  .footer-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-copy { font-size: 0.78rem; color: var(--muted); }
+  .footer-links { display: flex; gap: 2rem; }
+  .footer-link { font-size: 0.78rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-link:hover { color: var(--gold); }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .fade-up {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .projects-grid { grid-template-columns: repeat(2, 1fr); }
+    .skills-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-stats { display: none; }
+  }
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .menu-btn { display: flex; }
+    .hero { padding: 7rem 1.5rem 4rem; }
+    .hero-name { font-size: clamp(3rem, 12vw, 5rem); }
+    .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .services-grid { grid-template-columns: 1fr; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: repeat(2, 1fr); }
+    .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .section { padding: 5rem 1.5rem; }
+    .projects-filter { flex-wrap: wrap; }
+    .footer-inner { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 480px) {
+    .skills-grid { grid-template-columns: 1fr; }
+  }
+`;
 
 export default function Portfolio() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
-  const [hoveredProject, setHoveredProject] = useState(null);
-  const [visibleSections, setVisibleSections] = useState({});
+  const [menuOpen, setMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
+  const sectionRefs = useRef({});
 
   useEffect(() => {
-    const handleScroll = () => {
+    const onScroll = () => {
       setScrollY(window.scrollY);
-      
-      const sections = ['about', 'services', 'projects', 'skills', 'experience', 'contact'];
-      const newVisibleSections = {};
-      
-      sections.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          newVisibleSections[id] = rect.top < window.innerHeight * 0.75;
+      // Fade-up animations
+      document.querySelectorAll('.fade-up').forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight * 0.85) {
+          el.classList.add('visible');
         }
       });
-      
-      setVisibleSections(newVisibleSections);
     };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setMenuOpen(false);
+  };
+
+  const navItems = ['About', 'Services', 'Projects', 'Experience', 'Skills', 'Contact'];
 
   const projects = [
     {
-      title: 'NextPro Africa Football Academy',
-      description: 'Comprehensive platform for player management with registration system, admin dashboard, real-time updates and secure authentication.',
-      tech: ['Next.js', 'Tailwind CSS', 'Supabase', 'React', 'PostgreSQL'],
-      features: ['Player Registration', 'Admin Dashboard', 'Real-time Updates', 'Responsive Design'],
+      title: 'NextPro Africa',
+      subtitle: 'Football Academy Platform',
+      type: 'Full Stack Application',
+      status: 'Live',
+      description: 'Comprehensive football academy management platform with player registration, admin dashboard, performance tracking, and secure authentication. Serving active players and coaches across Nigeria.',
+      tech: ['Next.js', 'Supabase', 'PostgreSQL', 'Tailwind CSS'],
+      link: 'https://nextproafrica.com/',
       github: 'https://github.com/depriceless',
-      type: 'Web Application',
       category: 'fullstack',
-      color: 'from-green-500 to-emerald-600',
       image: 'https://i.imgur.com/ptG8Xi2.png',
-      metrics: { users: '500+', performance: 'A+' }
+      metrics: { users: '500+', perf: 'A+' }
     },
     {
       title: 'EcoHarvest',
-      description: 'B2B agrochemical platform featuring product catalog, customer portal, and SEO optimization for enterprise clients.',
-      tech: ['React.js', 'Tailwind CSS', 'SEO', 'Firebase'],
-      features: ['Product Catalog', 'SEO Optimized', 'Analytics Dashboard', 'Mobile Responsive'],
+      subtitle: 'Agrochemical B2B Platform',
+      type: 'Business Website',
+      status: 'Live',
+      description: 'B2B agrochemical platform featuring a full product catalog, customer portal, and deep SEO optimization — delivering consistent organic traffic for enterprise agricultural clients.',
+      tech: ['React.js', 'Firebase', 'Tailwind CSS', 'SEO'],
       link: 'https://ecoharvestng.com/',
       github: 'https://github.com/depriceless',
-      type: 'Business Website',
       category: 'frontend',
-      color: 'from-amber-500 to-orange-600',
       image: 'https://i.imgur.com/XKEH9jq.png',
-      metrics: { traffic: '10k/month', conversion: '3.2%' }
+      metrics: { traffic: '10k/mo', cvr: '3.2%' }
     },
     {
-      title: 'VTU Mobile Application',
-      description: 'Cross-platform fintech mobile app enabling airtime, data, and bill payments with secure transactions and real-time tracking.',
-      tech: ['React Native', 'Firebase', 'Firestore', 'Payment Gateway'],
-      features: ['Mobile Payment', 'Real-time Tracking', 'Secure Auth', 'Transaction History'],
+      title: 'VTU Mobile App',
+      subtitle: 'Fintech Payments Application',
+      type: 'Mobile Application',
+      status: 'Published',
+      description: 'Cross-platform fintech app enabling airtime top-ups, data purchases, and bill payments with real-time transaction tracking and secure authentication.',
+      tech: ['React Native', 'Firebase', 'Firestore', 'Payment API'],
       github: 'https://github.com/depriceless',
-      type: 'Mobile App',
       category: 'mobile',
-      color: 'from-blue-500 to-purple-600',
       image: 'https://i.imgur.com/Nq5cMqz.jpeg',
       metrics: { downloads: '5k+', rating: '4.8★' }
-    }
+    },
+    {
+      title: 'ElectroMarket',
+      subtitle: 'Nigerian Classifieds Marketplace',
+      type: 'Full Stack Application',
+      status: 'In Development',
+      description: 'Full-featured classifieds marketplace for Nigeria — buy and sell electronics, vehicles, property, fashion, jobs and more. Features real-time messaging, saved listings, seller verification, category browsing, and a mobile-first responsive design.',
+      tech: ['Next.js', 'Prisma', 'PostgreSQL', 'NextAuth', 'Tailwind CSS'],
+      category: 'fullstack',
+      image: '/electro.png',
+      metrics: { categories: '12+', type: 'Marketplace' }
+    },
   ];
 
   const services = [
-    {
-      icon: <Globe className="w-8 h-8" />,
-      title: 'Web Development',
-      description: 'Custom websites and applications with modern frameworks, SEO optimization, and optimal performance.',
-      highlights: ['Responsive Design', 'SEO Optimization', 'Fast Loading']
-    },
-    {
-      icon: <Smartphone className="w-8 h-8" />,
-      title: 'Mobile App Development',
-      description: 'Cross-platform iOS/Android applications using React Native with native performance and seamless UX.',
-      highlights: ['Cross-Platform', 'Native Feel', 'Offline Support']
-    },
-    {
-      icon: <Database className="w-8 h-8" />,
-      title: 'Backend Solutions',
-      description: 'Scalable server architecture with secure APIs, database design, and cloud infrastructure setup.',
-      highlights: ['API Development', 'Database Design', 'Cloud Integration']
-    },
-    {
-      icon: <Layers className="w-8 h-8" />,
-      title: 'Full Stack Solutions',
-      description: 'End-to-end development services handling complete project lifecycle from design to deployment and maintenance.',
-      highlights: ['Complete Solutions', 'Maintenance Support', 'Scalability']
-    }
+    { icon: <Globe size={24} />, title: 'Web Development', desc: 'Custom websites with modern frameworks, SEO optimization, and peak performance.', features: ['Responsive Design', 'SEO Optimization', 'Fast Loading'] },
+    { icon: <Smartphone size={24} />, title: 'Mobile Development', desc: 'Cross-platform iOS & Android apps using React Native with native performance.', features: ['Cross-Platform', 'Native Feel', 'Offline Support'] },
+    { icon: <Database size={24} />, title: 'Backend Solutions', desc: 'Scalable architecture with secure APIs, database design, and cloud infrastructure.', features: ['API Development', 'Database Design', 'Cloud Setup'] },
+    { icon: <Layers size={24} />, title: 'Full Stack Projects', desc: 'End-to-end development from architecture to deployment, maintenance and growth.', features: ['Complete Ownership', 'Maintenance', 'Scalability'] },
   ];
+
+  const skills = {
+    Frontend: ['React.js', 'Next.js', 'Tailwind CSS', 'JavaScript ES6+', 'HTML5/CSS3', 'Responsive Design'],
+    Mobile: ['React Native', 'Mobile UI/UX', 'Cross-Platform Dev', 'App Store Deploy'],
+    Backend: ['Firebase', 'Supabase', 'MongoDB', 'PostgreSQL', 'REST APIs'],
+    Tools: ['Git/GitHub', 'VS Code', 'Vercel', 'Figma', 'Docker', 'Postman'],
+  };
 
   const experience = [
     {
-      company: 'Freelance Developer',
-      position: 'Full Stack Developer',
-      duration: '2022 - Present',
-      highlights: [
-        'Delivered 10+ projects for diverse clients across fintech, e-commerce, and SaaS sectors',
-        'Increased client website traffic by 40% through SEO optimization and performance improvements',
-        'Maintained 100% client satisfaction rate with on-time delivery and professional support'
-      ]
+      company: 'Freelance', position: 'Full Stack Developer', duration: '2022 – Present',
+      highlights: ['Delivered 10+ projects across fintech, e-commerce, and SaaS sectors', 'Increased client traffic by 40% through SEO and performance engineering', 'Maintained 100% client satisfaction with professional, on-time delivery'],
     },
     {
-      company: 'NextPro Africa',
-      position: 'Lead Developer',
-      duration: '2023 - 2024',
-      highlights: [
-        'Built comprehensive player management system serving 500+ active users',
-        'Designed and implemented secure authentication and database architecture',
-        'Led technical decisions and code quality standards for the platform'
-      ]
-    }
-  ];
-
-  const testimonials = [
-    {
-      name: 'Ahmed Okafor',
-      role: 'CEO, NextPro Africa',
-      text: 'Mutiu delivered an exceptional platform that exceeded our expectations. His technical expertise and attention to detail were invaluable.',
-      rating: 5
+      company: 'NextPro Africa', position: 'Lead Developer', duration: '2023 – 2024',
+      highlights: ['Built complete player management system serving 500+ active users', 'Designed secure authentication and scalable database architecture', 'Led all technical decisions and maintained code quality standards'],
     },
-    {
-      name: 'Chioma Adeyemi',
-      role: 'Founder, EcoHarvest',
-      text: 'Professional, responsive, and highly skilled. Mutiu transformed our vision into a robust, scalable platform. Highly recommended!',
-      rating: 5
-    }
   ];
 
-  const availability = {
-    status: 'Available',
-    responseTime: '24 hours',
-    timezone: 'WAT (UTC+1)',
-    workingHours: 'Mon - Sat, 9AM - 6PM'
-  };
-
-  const skills = {
-    'Frontend': ['React.js', 'Next.js', 'Tailwind CSS', 'JavaScript ES6+', 'HTML5/CSS3', 'Responsive Design'],
-    'Mobile': ['React Native', 'Mobile UI/UX', 'Cross-platform Development', 'App Store Deployment'],
-    'Backend': ['Firebase', 'Supabase', 'MongoDB', 'PostgreSQL', 'REST APIs'],
-    'Tools': ['Git/GitHub', 'VS Code', 'Vercel', 'Figma', 'Docker', 'Postman']
-  };
-
-  const filteredProjects = activeFilter === 'all' ? projects : projects.filter(p => p.category === activeFilter);
-
-  const scrollToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setIsMenuOpen(false);
-  };
+  const filtered = activeFilter === 'all' ? projects : projects.filter(p => p.category === activeFilter);
 
   return (
-    <div className="bg-slate-950 text-white min-h-screen overflow-x-hidden">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute w-96 h-96 bg-green-700/20 rounded-full blur-3xl top-20 right-20 animate-pulse"></div>
-        <div className="absolute w-96 h-96 bg-slate-300/20 rounded-full blur-3xl bottom-20 left-20 animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute w-64 h-64 bg-emerald-600/20 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" style={{animationDelay: '2s'}}></div>
-      </div>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
 
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-slate-950/95 backdrop-blur-lg border-b border-slate-800 shadow-2xl' : 'bg-transparent'}`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="text-2xl font-bold cursor-pointer group">
-              <span className="bg-gradient-to-r from-emerald-400 to-slate-300 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 inline-block">
-                Mutiu Ridwan 
-              </span>
-            </div>
-            
-            <div className="hidden md:flex gap-8">
-              {['Home', 'About', 'Services', 'Projects', 'Experience', 'Skills', 'Contact'].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => scrollToSection(item.toLowerCase())}
-                  className="text-gray-300 hover:text-emerald-400 transition-all duration-300 font-medium relative group"
-                >
-                  {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-400 to-slate-300 group-hover:w-full transition-all duration-300"></span>
-                </button>
-              ))}
-            </div>
-
-            <button
-              className="md:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+      {/* Nav */}
+      <nav className={`nav ${scrollY > 60 ? 'scrolled' : ''}`}>
+        <div className="nav-inner">
+          <div className="logo" onClick={() => scrollTo('home')}>MRA</div>
+          <div className="nav-links">
+            {navItems.map(item => (
+              <button key={item} className="nav-link" onClick={() => scrollTo(item.toLowerCase())}>{item}</button>
+            ))}
+            <button className="nav-cta" onClick={() => scrollTo('contact')}>Hire Me</button>
           </div>
-
-          {isMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 flex flex-col gap-2">
-              {['Home', 'About', 'Services', 'Projects', 'Experience', 'Skills', 'Contact'].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => scrollToSection(item.toLowerCase())}
-                  className="text-left text-gray-300 hover:text-blue-400 text-sm font-medium py-2 px-4 rounded-lg hover:bg-slate-800/50 transition-all duration-200"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          )}
+          <button className="menu-btn" onClick={() => setMenuOpen(true)}>
+            <Menu size={22} />
+          </button>
         </div>
       </nav>
 
-      <section id="home" className="min-h-screen flex items-center justify-center px-6 pt-20 relative overflow-hidden">
-        <div className="max-w-5xl mx-auto relative z-10 w-full">
-          <div className="flex flex-col items-center gap-12">
-            <div className="text-center max-w-3xl">
-              <div className="mb-8 inline-flex gap-2 items-center">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <div className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-full text-slate-300 text-xs font-medium tracking-wider uppercase hover:border-slate-600 transition-all duration-300">
-                  Available for opportunities
-                </div>
-              </div>
-              
-              <h1 className="text-6xl md:text-8xl font-black mb-8 leading-tight tracking-tight">
-                <span className="block">Mutiu Ridwan</span>
-                <span className="block bg-gradient-to-r from-emerald-400 via-green-400 to-slate-300 bg-clip-text text-transparent">Adeyinka</span>
-              </h1>
-              
-              <p className="text-xl md:text-2xl text-slate-300 mb-4 font-medium">
-                Full Stack Developer & Problem Solver
-              </p>
-              
-              <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-                I craft high-performance web and mobile applications using React.js, React Native, and Next.js. Specialized in building scalable solutions that drive business growth and enhance user experience.
-              </p>
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="mobile-menu">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="logo">MRA</div>
+            <button style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer' }} onClick={() => setMenuOpen(false)}>
+              <X size={24} />
+            </button>
+          </div>
+          <div className="mobile-nav-links">
+            {['Home', ...navItems].map(item => (
+              <button key={item} className="mobile-nav-link" onClick={() => scrollTo(item.toLowerCase())}>{item}</button>
+            ))}
+          </div>
+        </div>
+      )}
 
-              <div className="flex gap-4 justify-center flex-wrap mb-12">
-                <button
-                  onClick={() => scrollToSection('projects')}
-                  className="group px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-700 rounded-lg hover:shadow-2xl hover:shadow-emerald-500/50 transition-all duration-300 flex items-center gap-2 font-semibold hover:scale-105 active:scale-95"
-                >
-                  View My Work 
-                  <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
-                </button>
-                <button
-                  onClick={() => scrollToSection('contact')}
-                  className="px-8 py-4 border-2 border-slate-400 rounded-lg hover:bg-slate-800 hover:border-emerald-500 transition-all duration-300 font-semibold hover:scale-105 active:scale-95"
-                >
-                  Get In Touch
-                </button>
+      {/* Hero */}
+      <section id="home" className="hero">
+        <div className="hero-grid" />
+        <div className="hero-glow" />
+        <div className="hero-inner">
+          <div className="hero-eyebrow">
+            <div className="eyebrow-line" />
+            <span className="eyebrow-text">Full Stack Developer · Ibadan, Oyo State, Nigeria</span>
+          </div>
+          <h1 className="hero-name">
+            Mutiu Ridwan
+            <em className="hero-name-em">Adeyinka</em>
+          </h1>
+          <div className="hero-role">Crafting Digital Experiences That Matter</div>
+          <p className="hero-desc">
+            I build high-performance web and mobile applications using React, Next.js, and React Native — focused on clean architecture, measurable outcomes, and solutions that scale.
+          </p>
+          <div className="hero-actions">
+            <button className="btn-primary" onClick={() => scrollTo('projects')}>
+              View Work <ArrowRight size={16} />
+            </button>
+            <button className="btn-ghost" onClick={() => scrollTo('contact')}>
+              Let's Talk
+            </button>
+          </div>
+          <div className="hero-socials">
+            <a href="https://github.com/depriceless" target="_blank" rel="noreferrer" className="social-link"><Github size={20} /></a>
+            <a href="#" target="_blank" rel="noreferrer" className="social-link"><Linkedin size={20} /></a>
+            <a href="mailto:mutiuridwan0@gmail.com" className="social-link"><Mail size={20} /></a>
+          </div>
+          <div className="hero-stats">
+            <div className="stat-item">
+              <div className="stat-num">10+</div>
+              <div className="stat-label">Projects</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-num">3+</div>
+              <div className="stat-label">Years Exp.</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-num">100%</div>
+              <div className="stat-label">Satisfaction</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About */}
+      <section id="about" className="section">
+        <div className="section-inner">
+          <div className="about-grid">
+            <div className="about-img-wrap fade-up">
+              <div className="about-img-frame">
+                <img src="https://i.imgur.com/n9I3Y9h.jpeg" alt="Mutiu Ridwan Adeyinka" />
               </div>
-              
-              <div className="flex gap-6 justify-center">
-                {[
-                  {icon: Github, url: 'https://github.com/depriceless', label: 'GitHub'},
-                  {icon: Linkedin, url: '#', label: 'LinkedIn'},
-                  {icon: Mail, url: 'mailto:mutiuridwan0@gmail.com', label: 'Email'}
-                ].map((social, i) => (
-                  <a 
-                    key={i}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={social.label}
-                    className="p-4 bg-slate-800/50 rounded-lg hover:bg-blue-500/20 hover:scale-125 transition-all duration-300 border border-slate-700 hover:border-blue-500 group"
-                  >
-                    <social.icon size={24} className="group-hover:rotate-12 transition-transform duration-300" />
-                  </a>
+            </div>
+            <div className="fade-up" style={{ transitionDelay: '0.15s' }}>
+              <div className="section-label">
+                <div className="section-label-line" />
+                <span className="section-label-text">About</span>
+              </div>
+              <h2 className="section-title">Building with <em>purpose</em> and precision</h2>
+              <p className="about-text">
+                Results-driven Full Stack Developer with proven expertise building scalable, high-performance applications. Specialized in React.js, React Native, and Next.js — with demonstrated success across fintech, e-commerce, and SaaS.
+              </p>
+              <p className="about-text">
+                I'm passionate about intuitive, user-centric solutions that solve real business problems. Strong background in clean code practices, agile development, and cross-functional collaboration with a sharp eye for design and performance.
+              </p>
+              <div className="about-stats">
+                {[['10+', 'Projects Delivered'], ['100%', 'Client Satisfaction'], ['3+', 'Years Experience'], ['2', 'Apps in Production']].map(([n, l]) => (
+                  <div key={l} className="about-stat">
+                    <div className="about-stat-num">{n}</div>
+                    <div className="about-stat-label">{l}</div>
+                  </div>
                 ))}
               </div>
-
-              <div className="mt-16 animate-bounce" style={{animationDuration: '2s'}}>
-                <ChevronDown size={32} className="mx-auto text-blue-400" />
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="about" className={`py-20 px-6 bg-slate-900/50 transition-all duration-1000 ${visibleSections.about ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">About Me</h2>
-          
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className={`relative group transition-all duration-1000 ${visibleSections.about ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl blur-3xl opacity-30 group-hover:opacity-60 transition-opacity duration-500"></div>
-              <div className="relative aspect-square rounded-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 flex items-center justify-center border-2 border-slate-700 overflow-hidden group-hover:border-transparent transition-all duration-500 group-hover:scale-105">
-                <img 
-                  src="https://i.imgur.com/n9I3Y9h.jpeg" 
-                  alt="Mutiu Ridwan Adeyinka" 
-                  className="w-full h-full object-cover object-top"
-                />
-              </div>
+      {/* Services */}
+      <section id="services" className="section services-bg">
+        <div className="section-inner">
+          <div className="fade-up" style={{ marginBottom: '3rem' }}>
+            <div className="section-label">
+              <div className="section-label-line" />
+              <span className="section-label-text">Services</span>
             </div>
-            
-            <div className={`space-y-6 transition-all duration-1000 ${visibleSections.about ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}>
-              
-              <p className="text-lg text-slate-300 leading-relaxed hover:text-slate-200 transition-colors duration-300">
-                Results-driven Full Stack Developer with proven expertise building scalable, high-performance applications. Specialized in React.js, React Native, and Next.js with demonstrated success in fintech, e-commerce, and SaaS.
-              </p>
-              
-              <p className="text-lg text-slate-300 leading-relaxed hover:text-slate-200 transition-colors duration-300">
-                I'm passionate about creating intuitive, user-centric solutions that solve real business problems. Strong background in clean code practices, agile development, and cross-functional collaboration.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-4 pt-6">
-                <div className="p-6 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-xl border border-blue-500/20 hover:border-blue-500/50 hover:scale-110 transition-all duration-300 cursor-pointer group hover:shadow-lg hover:shadow-blue-500/20">
-                  <div className="text-4xl font-bold text-blue-400 mb-2">10+</div>
-                  <div className="text-slate-400">Projects Delivered</div>
-                </div>
-                <div className="p-6 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-xl border border-purple-500/20 hover:border-purple-500/50 hover:scale-110 transition-all duration-300 cursor-pointer group hover:shadow-lg hover:shadow-purple-500/20">
-                  <div className="text-4xl font-bold text-purple-400 mb-2">100%</div>
-                  <div className="text-slate-400">Client Satisfaction</div>
-                </div>
-              </div>
-            </div>
+            <h2 className="section-title">What I <em>do</em></h2>
           </div>
-        </div>
-      </section>
-
-      <section id="services" className={`py-20 px-6 transition-all duration-1000 ${visibleSections.services ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Services</h2>
-            <p className="text-slate-400 text-lg">Professional solutions tailored to your project needs</p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-blue-500/50 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 group cursor-pointer flex flex-col"
-              >
-                <div className="w-12 h-12 bg-slate-800/50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-all duration-300">
-                  <div className="text-slate-400 group-hover:text-blue-400 transition-colors">
-                    {service.icon}
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3 group-hover:text-blue-400 transition-colors duration-300">
-                  {service.title}
-                </h3>
-                <p className="text-slate-400 mb-4 text-sm leading-relaxed flex-grow">
-                  {service.description}
-                </p>
-                <div className="space-y-2 mb-4">
-                  {service.highlights.map((highlight, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-slate-300 group-hover:text-slate-200 transition-colors">
-                      <CheckCircle size={16} className="text-green-400 group-hover:scale-125 transition-transform" />
-                      <span>{highlight}</span>
-                    </div>
+          <div className="services-grid fade-up" style={{ transitionDelay: '0.1s' }}>
+            {services.map((s, i) => (
+              <div key={i} className="service-card">
+                <div className="service-num">0{i + 1}</div>
+                <div className="service-icon">{s.icon}</div>
+                <div className="service-title">{s.title}</div>
+                <p className="service-desc">{s.desc}</p>
+                <ul className="service-features">
+                  {s.features.map(f => (
+                    <li key={f} className="service-feature">
+                      <span className="feature-dot" />{f}
+                    </li>
                   ))}
-                </div>
-                <div className="text-emerald-400 font-semibold text-sm">Contact for pricing</div>
+                </ul>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="projects" className={`py-20 px-6 bg-slate-900/50 transition-all duration-1000 ${visibleSections.projects ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Featured Projects</h2>
-            <p className="text-slate-400 text-lg mb-8">Production-ready applications built for real clients</p>
-            
-            <div className="flex justify-center gap-4 flex-wrap">
-              {['all', 'fullstack', 'frontend', 'mobile'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
-                    activeFilter === filter
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                      : 'bg-slate-800 text-slate-400 hover:text-white hover:border-blue-500 border border-slate-700'
-                  }`}
-                >
-                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                </button>
-              ))}
+      {/* Projects */}
+      <section id="projects" className="section">
+        <div className="section-inner">
+          <div className="fade-up" style={{ marginBottom: '3rem' }}>
+            <div className="section-label">
+              <div className="section-label-line" />
+              <span className="section-label-text">Work</span>
             </div>
+            <h2 className="section-title">Selected <em>Projects</em></h2>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project, index) => (
-              <div
-                key={index}
-                onMouseEnter={() => setHoveredProject(index)}
-                onMouseLeave={() => setHoveredProject(null)}
-                className={`group bg-slate-900 rounded-xl overflow-hidden border border-slate-800 hover:border-blue-500/50 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 cursor-pointer flex flex-col ${hoveredProject === index ? 'ring-2 ring-blue-500/50' : ''}`}
-              >
-                <div className={`h-48 bg-gradient-to-br ${project.color} relative overflow-hidden group-hover:scale-110 transition-transform duration-500`}>
-                  {project.image && (
-                    <img 
-                      src={project.image} 
-                      alt={project.title}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
+          <div className="projects-filter fade-up">
+            {['all', 'fullstack', 'frontend', 'mobile'].map(f => (
+              <button key={f} className={`filter-btn ${activeFilter === f ? 'active' : ''}`} onClick={() => setActiveFilter(f)}>
+                {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+          <div className="projects-grid fade-up" style={{ transitionDelay: '0.1s' }}>
+            {filtered.map((p, i) => (
+              <div key={i} className="project-card">
+                <div className="project-img">
+                  <img src={p.image} alt={p.title} />
+                  <div className="project-img-overlay" />
                 </div>
-                
-                <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors duration-300 flex items-center gap-2">
-                    {project.title}
-                    <ArrowUpRight size={20} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </h3>
-                  
-                  <div className="flex gap-2 mb-3">
-                    <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded font-semibold">{project.type}</span>
-                    {project.metrics && Object.entries(project.metrics).map(([key, value]) => (
-                      <span key={key} className="px-2 py-1 bg-slate-800 text-slate-300 text-xs rounded">{value}</span>
-                    ))}
-                  </div>
-                  
-                  <p className="text-slate-400 mb-4 text-sm leading-relaxed group-hover:text-slate-300 transition-colors flex-grow">
-                    {project.description}
-                  </p>
-                  
-                  <div className="mb-4">
-                    <p className="text-sm font-semibold text-slate-300 mb-2">Key Features:</p>
-                    <div className="space-y-1">
-                      {project.features.map((feature, i) => (
-                        <div key={i} className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-300 transition-colors group-hover:translate-x-1 duration-300">
-                          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                          <span>{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tech.map((tech, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 rounded-full text-xs text-blue-400 hover:bg-blue-500/30 hover:border-blue-500/50 transition-all duration-300 cursor-pointer"
-                      >
-                        {tech}
+                <div className="project-body">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                    <div className="project-type">{p.type}</div>
+                    {p.status && (
+                      <span style={{ fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '0.2rem 0.6rem', border: '1px solid rgba(52,211,153,0.4)', color: 'var(--gold)', borderRadius: '2px' }}>
+                        ● {p.status}
                       </span>
+                    )}
+                  </div>
+                  <div className="project-title">
+                    <div>
+                      {p.title}
+                      {p.subtitle && <div style={{ fontSize: '0.8rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 300, color: 'var(--muted)', marginTop: '0.1rem' }}>{p.subtitle}</div>}
+                    </div>
+                    <ArrowUpRight size={18} className="project-arrow" />
+                  </div>
+                  <p className="project-desc">{p.description}</p>
+                  <div className="project-tech">
+                    {p.tech.map(t => <span key={t} className="tech-tag">{t}</span>)}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                    {Object.entries(p.metrics).map(([k, v]) => (
+                      <span key={k} style={{ fontSize: '0.7rem', color: 'var(--gold)', border: '1px solid rgba(52,211,153,0.2)', padding: '0.2rem 0.5rem', letterSpacing: '0.05em' }}>{v}</span>
                     ))}
                   </div>
-                  
-                  <div className="flex gap-4">
-                    {project.link && (
-                      <a 
-                        href={project.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium group/link hover:translate-x-1 transition-transform duration-300"
-                      >
-                        <ExternalLink size={16} /> Live
-                      </a>
-                    )}
-                    <a 
-                      href={project.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-slate-400 hover:text-white text-sm font-medium group/link hover:translate-x-1 transition-transform duration-300"
-                    >
-                      <Github size={16} /> Code
-                    </a>
+                  <div className="project-links">
+                    {p.link && <a href={p.link} target="_blank" rel="noreferrer" className="project-link"><ExternalLink size={14} /> Live Site</a>}
+                    {p.github && <a href={p.github} target="_blank" rel="noreferrer" className="project-link"><Github size={14} /> Code</a>}
+                    {!p.github && !p.link && <span style={{fontSize:'0.72rem', color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase'}}>Private / Coming Soon</span>}
                   </div>
                 </div>
               </div>
@@ -466,27 +818,27 @@ export default function Portfolio() {
         </div>
       </section>
 
-      <section id="experience" className={`py-20 px-6 transition-all duration-1000 ${visibleSections.experience ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">Experience</h2>
-          
-          <div className="space-y-8">
-            {experience.map((job, index) => (
-              <div key={index} className="group p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
-                <div className="flex items-start gap-4 mb-4">
-                  <Briefcase className="text-blue-400 mt-1 flex-shrink-0 group-hover:scale-125 transition-transform duration-300" size={24} />
-                  <div className="flex-grow">
-                    <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">{job.position}</h3>
-                    <p className="text-slate-400">{job.company}</p>
-                    <p className="text-sm text-slate-500">{job.duration}</p>
-                  </div>
-                </div>
-                
-                <ul className="space-y-2 ml-10">
-                  {job.highlights.map((highlight, i) => (
-                    <li key={i} className="flex items-start gap-3 text-slate-300 group-hover:text-slate-200 transition-colors">
-                      <TrendingUp size={16} className="text-green-400 mt-1 flex-shrink-0" />
-                      <span>{highlight}</span>
+      {/* Experience */}
+      <section id="experience" className="section exp-bg">
+        <div className="section-inner">
+          <div className="fade-up" style={{ marginBottom: '3rem' }}>
+            <div className="section-label">
+              <div className="section-label-line" />
+              <span className="section-label-text">Experience</span>
+            </div>
+            <h2 className="section-title">Where I've <em>worked</em></h2>
+          </div>
+          <div className="exp-timeline fade-up" style={{ transitionDelay: '0.1s' }}>
+            {experience.map((job, i) => (
+              <div key={i} className="exp-item">
+                <div className="exp-duration">{job.duration}</div>
+                <div className="exp-position">{job.position}</div>
+                <div className="exp-company">{job.company}</div>
+                <ul className="exp-highlights">
+                  {job.highlights.map((h, j) => (
+                    <li key={j} className="exp-highlight">
+                      <TrendingUp size={14} className="exp-highlight-icon" />
+                      {h}
                     </li>
                   ))}
                 </ul>
@@ -496,27 +848,24 @@ export default function Portfolio() {
         </div>
       </section>
 
-      <section id="skills" className={`py-20 px-6 transition-all duration-1000 ${visibleSections.skills ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Technical Skills</h2>
-            <p className="text-slate-400 text-lg">Technologies and tools I work with daily</p>
+      {/* Skills */}
+      <section id="skills" className="section">
+        <div className="section-inner">
+          <div className="fade-up" style={{ marginBottom: '3rem' }}>
+            <div className="section-label">
+              <div className="section-label-line" />
+              <span className="section-label-text">Expertise</span>
+            </div>
+            <h2 className="section-title">Technical <em>Skills</em></h2>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Object.entries(skills).map(([category, skillList], index) => (
-              <div
-                key={index}
-                className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-purple-500/50 transition-all duration-300 hover:bg-slate-800/50 hover:scale-105 group cursor-pointer"
-              >
-                <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent group-hover:from-blue-300 group-hover:to-purple-400 transition-all duration-300">
-                  {category}
-                </h3>
-                <ul className="space-y-3">
-                  {skillList.map((skill, i) => (
-                    <li key={i} className="flex items-center gap-3 text-slate-300 hover:text-slate-100 transition-colors duration-200 group/skill cursor-pointer hover:translate-x-2 duration-300">
-                      <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full group-hover/skill:scale-150 transition-transform duration-300"></div>
-                      <span className="text-sm">{skill}</span>
+          <div className="skills-grid fade-up" style={{ transitionDelay: '0.1s' }}>
+            {Object.entries(skills).map(([cat, list]) => (
+              <div key={cat} className="skill-group">
+                <div className="skill-group-title">{cat}</div>
+                <ul className="skill-list">
+                  {list.map(s => (
+                    <li key={s} className="skill-item">
+                      <span className="skill-dot" />{s}
                     </li>
                   ))}
                 </ul>
@@ -526,100 +875,85 @@ export default function Portfolio() {
         </div>
       </section>
 
-      <section id="contact" className={`py-20 px-6 bg-slate-900/50 transition-all duration-1000 ${visibleSections.contact ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Let's Collaborate</h2>
-            <p className="text-slate-400 text-lg">I'm open to freelance projects, full-time opportunities, and consulting</p>
+      {/* Contact */}
+      <section id="contact" className="section contact-bg">
+        <div className="section-inner">
+          <div className="fade-up" style={{ marginBottom: '3rem' }}>
+            <div className="section-label">
+              <div className="section-label-line" />
+              <span className="section-label-text">Contact</span>
+            </div>
+            <h2 className="section-title">Let's build something <em>great</em></h2>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
-            <a 
-              href="mailto:mutiuridwan0@gmail.com"
-              className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-blue-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 group cursor-pointer"
-            >
-              <Mail className="mx-auto mb-4 text-blue-400 group-hover:scale-125 group-hover:text-blue-300 transition-all duration-300 group-hover:-translate-y-2" size={32} />
-              <h3 className="font-bold mb-2 text-center group-hover:text-blue-400 transition-colors">Email</h3>
-              <p className="text-slate-400 text-sm text-center break-all group-hover:text-slate-300 transition-colors">mutiuridwan0@gmail.com</p>
-            </a>
-            
-            <a 
-              href="https://wa.me/2348125813562"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-green-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20 group cursor-pointer"
-            >
-              <MessageCircle className="mx-auto mb-4 text-green-400 group-hover:scale-125 group-hover:text-green-300 transition-all duration-300 group-hover:-translate-y-2" size={32} />
-              <h3 className="font-bold mb-2 text-center group-hover:text-green-400 transition-colors">WhatsApp</h3>
-            </a>
-
-            <a 
-              href="https://github.com/depriceless"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-6 bg-slate-900 rounded-xl border border-slate-800 hover:border-purple-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 group cursor-pointer"
-            >
-              <Github className="mx-auto mb-4 text-purple-400 group-hover:scale-125 group-hover:text-purple-300 transition-all duration-300 group-hover:-translate-y-2" size={32} />
-              <h3 className="font-bold mb-2 text-center group-hover:text-purple-400 transition-colors">GitHub</h3>
-              <p className="text-slate-400 text-sm text-center group-hover:text-slate-300 transition-colors">@depriceless</p>
-            </a>
-          </div>
-          <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl p-8 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10">
-            <h3 className="text-2xl font-bold mb-6 text-center hover:text-blue-400 transition-colors">Ready to start something amazing?</h3>
-            <p className="text-slate-300 text-center mb-8 hover:text-slate-200 transition-colors leading-relaxed">
-              Whether you need a web application, mobile app, full-stack solution, or consulting services, I'm ready to bring your vision to life with quality code and professional service.
-            </p>
-            <div className="flex justify-center gap-4 flex-wrap">
-              <a 
-                href="mailto:mutiuridwan0@gmail.com"
-                className="group px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 font-semibold hover:scale-105 active:scale-95 inline-flex items-center gap-2"
-              >
-                Send Email
-                <Mail size={18} className="group-hover:translate-x-1 transition-transform" />
+          <div className="contact-grid fade-up" style={{ transitionDelay: '0.1s' }}>
+            <div className="contact-cards">
+              <a href="mailto:mutiuridwan0@gmail.com" className="contact-card">
+                <Mail size={20} className="contact-icon" />
+                <div>
+                  <div className="contact-info-label">Email</div>
+                  <div className="contact-info-value">mutiuridwan0@gmail.com</div>
+                </div>
+                <ArrowUpRight size={16} className="contact-arrow" />
               </a>
-              <a 
-                href="https://github.com/depriceless"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-8 py-4 border-2 border-slate-600 rounded-lg hover:bg-slate-800 hover:border-blue-500 transition-all duration-300 font-semibold hover:scale-105 active:scale-95 inline-flex items-center gap-2 group"
-              >
-                GitHub Profile
-                <Github size={18} className="group-hover:rotate-12 transition-transform" />
+              <a href="https://wa.me/2348125813562" target="_blank" rel="noreferrer" className="contact-card">
+                <MessageCircle size={20} className="contact-icon" />
+                <div>
+                  <div className="contact-info-label">WhatsApp</div>
+                  <div className="contact-info-value">+234 812 581 3562</div>
+                </div>
+                <ArrowUpRight size={16} className="contact-arrow" />
+              </a>
+              <a href="https://github.com/depriceless" target="_blank" rel="noreferrer" className="contact-card">
+                <Github size={20} className="contact-icon" />
+                <div>
+                  <div className="contact-info-label">GitHub</div>
+                  <div className="contact-info-value">@depriceless</div>
+                </div>
+                <ArrowUpRight size={16} className="contact-arrow" />
+              </a>
+              <a href="#" target="_blank" rel="noreferrer" className="contact-card">
+                <Linkedin size={20} className="contact-icon" />
+                <div>
+                  <div className="contact-info-label">LinkedIn</div>
+                  <div className="contact-info-value">Mutiu Ridwan Adeyinka</div>
+                </div>
+                <ArrowUpRight size={16} className="contact-arrow" />
               </a>
             </div>
-          </div>
 
-          <div className="mt-12 p-6 bg-slate-800/30 rounded-lg border border-slate-700 text-center">
-            <p className="text-slate-400">
-              <span className="font-semibold text-blue-400">Quick Response:</span> I typically respond to inquiries within 24 hours
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <footer className="py-12 px-6 border-t border-slate-800 hover:border-slate-700 transition-colors bg-slate-900/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-              <p className="text-slate-400 text-sm hover:text-slate-300 transition-colors font-semibold">
-                © 2025 Mutiu Ridwan Adeyinka. All rights reserved.
+            <div className="contact-cta-box">
+              <p className="contact-cta-quote">
+                "Have a project in mind? I'd love to hear about it."
               </p>
-              <p className="text-slate-500 text-xs mt-1">Crafted with attention to detail and modern web technologies</p>
+              <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: '1.8', marginBottom: '2rem' }}>
+                Whether you need a web application, mobile app, or full-stack solution — I'm ready to bring your vision to life with clean code and professional delivery.
+              </p>
+              <a href="mailto:mutiuridwan0@gmail.com" className="btn-primary">
+                Send a Message <ArrowRight size={16} />
+              </a>
+              <div className="contact-response">
+                <div className="response-dot" />
+                <span>Available for new projects · Responds within 24 hours</span>
+              </div>
             </div>
-            <div className="flex gap-6">
-              <a href="https://github.com/depriceless" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-400 transition-all duration-300 hover:scale-125 hover:-translate-y-1">
-                <Github size={20} />
-              </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-400 transition-all duration-300 hover:scale-125 hover:-translate-y-1">
-                <Linkedin size={20} />
-              </a>
-              <a href="mailto:mutiuridwan0@gmail.com" className="text-slate-400 hover:text-blue-400 transition-all duration-300 hover:scale-125 hover:-translate-y-1">
-                <Mail size={20} />
-              </a>
-            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-inner">
+          <div>
+            <div className="logo" style={{ marginBottom: '0.25rem' }}>MRA</div>
+            <div className="footer-copy">© {new Date().getFullYear()} Mutiu Ridwan Adeyinka. All rights reserved.</div>
+          </div>
+          <div className="footer-links">
+            <a href="https://github.com/depriceless" target="_blank" rel="noreferrer" className="footer-link">GitHub</a>
+            <a href="mailto:mutiuridwan0@gmail.com" className="footer-link">Email</a>
+            <a href="https://wa.me/2348125813562" target="_blank" rel="noreferrer" className="footer-link">WhatsApp</a>
           </div>
         </div>
       </footer>
-    </div>
+    </>
   );
 }
